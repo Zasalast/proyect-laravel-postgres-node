@@ -1,0 +1,34 @@
+# Establecer la imagen base
+FROM laravelfans/laravel:latest
+
+# Establecer el directorio de trabajo dentro del contenedor
+WORKDIR /var/www/html
+
+# Copiar los archivos del proyecto al contenedor
+COPY . /var/www/html
+
+# Instalar Composer y herramientas necesarias
+RUN apt-get update && apt-get install -y zip unzip \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Copiar el archivo de configuración de Composer
+COPY composer.json ./
+
+# Instalar las dependencias del proyecto
+#RUN user add -r www-data  # Create www-data user
+
+#RUN su -c "composer install --optimize-autoloader --no-dev" www-data
+
+# Establecer los permisos de almacenamiento/cache
+#RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+ #   && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Copiar el script de entrada y dar permisos de ejecución
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# Exponer el puerto en el que se ejecutará el servidor de Laravel
+EXPOSE 80
+
+# Ejecutar el script de entrada al iniciar el contenedor
+CMD ["/bin/bash", "/entrypoint.sh"]
